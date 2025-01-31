@@ -1,8 +1,12 @@
 # Usa Python 3.9 como base
 FROM python:3.9
 
-# Instala Tesseract OCR y dependencias necesarias
-RUN apt-get update && apt-get install -y tesseract-ocr libtesseract-dev
+# Instala dependencias del sistema, incluyendo Tesseract OCR y Poppler
+RUN apt-get update && apt-get install -y \
+    tesseract-ocr \
+    libtesseract-dev \
+    poppler-utils \
+    && apt-get clean
 
 # Configura el directorio de trabajo en el contenedor
 WORKDIR /app

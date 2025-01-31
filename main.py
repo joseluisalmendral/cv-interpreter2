@@ -16,6 +16,14 @@ SKILL_KEYWORDS = [
 async def root():
     return {"message": "Esto funciona"}
 
+@app.get("/check_poppler/")
+async def check_poppler():
+    poppler_check = os.system("which pdftoppm")
+    if poppler_check == 0:
+        return {"message": "Poppler está instalado y disponible"}
+    else:
+        return {"error": "Poppler no está instalado o no está en PATH"}
+
 @app.post("/process_cv/")
 async def process_cv(file: UploadFile = File(...)):
     try:
