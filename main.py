@@ -2,6 +2,7 @@ from fastapi import FastAPI, File, UploadFile, HTTPException
 import pytesseract
 from PIL import Image, UnidentifiedImageError
 from pdf2image import convert_from_bytes
+import os
 
 app = FastAPI()
 
