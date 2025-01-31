@@ -7,11 +7,82 @@ import os
 app = FastAPI()
 
 # Lista predefinida de habilidades comunes
-SKILL_KEYWORDS = [
-    "Python", "SQL", "Java", "Machine Learning", "Data Science", "Deep Learning",
-    "NLP", "Cloud", "AWS", "GCP", "Azure", "Kubernetes", "Docker", "TensorFlow",
-    "PyTorch", "Excel", "Power BI", "Tableau", "ETL", "Spark", "Hadoop"
-]
+SKILL_KEYWORDS = ['gcp',
+ 'kafka',
+ 'apache kafka',
+ 'iso27001',
+ 'estadistica descriptiva',
+ 'cloud computing',
+ 'big data',
+ 'comunicacion efectiva',
+ 'excel',
+ 'analisis de datos',
+ 'Estado no completado',
+ 'airflow',
+ 'gdpr',
+ 'statistics',
+ 'cloud platforms',
+ 'sistemas de seguridad',
+ 'analisis crítico',
+ 'big data tools',
+ 'data lakes',
+ 'analisis critico',
+ 'visualizacion',
+ 'tensorflow',
+ 'python',
+ 'trabajoenequipo',
+ 'deep learning',
+ 'data visualization',
+ 'datalakes',
+ 'data analysis',
+ 'powerbi',
+ 'machine learning',
+ 'spark',
+ 'auditoria de datos',
+ 'google cloud',
+ 'análisis de datos',
+ 'visualización de datos',
+ 'aws',
+ 'comunicación',
+ 'keras',
+ 'iso 27001',
+ 'gestion de riesgos',
+ 'docker',
+ 'seguridad',
+ 'trabajo en equipo',
+ 'visualizacion de datos',
+ 'nosql',
+ 'analisiscritico',
+ 'analisis predictivo',
+ 'comunicación efectiva',
+ 'visualización',
+ 'etl processes',
+ 'analisis',
+ 'data warehousing',
+ 'bigdata',
+ 'datawarehouses',
+ 'pytorch',
+ 'bi',
+ 'análisis predictivo',
+ 'kubernetes',
+ 'hadoop',
+ 'estadística descriptiva',
+ 'tableau',
+ 'comunicacion',
+ 'sql',
+ 'análisis crítico',
+ 'apachespark',
+ 'azure',
+ 'r',
+ 'data mining',
+ 'gestión de riesgos',
+ 'auditoría de datos',
+ 'seguridad de sistemas',
+ 'elt',
+ 'data warehouses',
+ 'etl',
+ 'nlp',
+ 'apache spark']
 
 @app.get("/")
 async def root():
@@ -53,7 +124,7 @@ async def process_cv(file: UploadFile = File(...)):
                 raise HTTPException(status_code=500, detail=f"Error al procesar la imagen: {str(e)}")
 
         # Extraer habilidades del texto
-        skills_detected = [skill for skill in SKILL_KEYWORDS if skill.lower() in text.lower()]
+        skills_detected = [skill.lower() for skill in SKILL_KEYWORDS if skill.lower() in text.lower()]
 
         # Retornar texto extraído y habilidades detectadas
         return {
