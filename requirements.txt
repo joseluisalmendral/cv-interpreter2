@@ -2,7 +2,4 @@ fastapi
 uvicorn
 pytesseract
 Pillow
-spacy
 pdf2image
-tika
-python-multipart  # Para manejar archivos en FastAPI

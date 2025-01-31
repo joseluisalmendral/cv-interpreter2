@@ -1,0 +1,12 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Logs
+*.log
+
+# Archivos grandes o temporales
+*.pdf
+*.jpg
+*.png
+.env

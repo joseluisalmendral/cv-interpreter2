@@ -1,20 +1,20 @@
-# Usa una imagen de Python
+# Usa Python 3.9 como base
 FROM python:3.9
 
-# Instala Tesseract OCR
-RUN apt-get update && apt-get install -y tesseract-ocr
+# Instala Tesseract OCR y dependencias necesarias
+RUN apt-get update && apt-get install -y tesseract-ocr libtesseract-dev
 
-# Crea un directorio en el contenedor
+# Configura el directorio de trabajo en el contenedor
 WORKDIR /app
 
-# Copia los archivos al contenedor
+# Copia los archivos del proyecto al contenedor
 COPY . /app
 
-# Instala las dependencias
+# Instala las dependencias de Python
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Exponer el puerto 8000
+# Expone el puerto 8000
 EXPOSE 8000
 
-# Ejecuta la API con Uvicorn
+# Comando para iniciar la API con Uvicorn
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
