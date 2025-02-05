@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 from typing import List
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Query
 import pytesseract
 from PIL import Image, UnidentifiedImageError
 from pdf2image import convert_from_bytes
