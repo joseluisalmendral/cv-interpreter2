@@ -1,8 +1,14 @@
-from fastapi import FastAPI, File, UploadFile, HTTPException
+from typing import List
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 import pytesseract
 from PIL import Image, UnidentifiedImageError
 from pdf2image import convert_from_bytes
 import os
+import pickle
+import numpy as np
+from pymongo import MongoClient
+from sklearn.metrics.pairwise import cosine_similarity
+from bson import ObjectId
 
 app = FastAPI()
 
