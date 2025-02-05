@@ -139,3 +139,45 @@ async def process_cv(file: UploadFile = File(...)):
         raise http_err
     except Exception as e:
         return {"error": f"Error inesperado: {str(e)}"}
+
+# Endpoint para recomendar ofertas de trabajo
+@app.post("/recommend_jobs/")
+async def recommend_jobs_endpoint(user_skills: List[str], top_n: int = 10, similarity_threshold: float = 0.30):
+
+    # Cargar el vectorizador previamente guardado
+    with open("tfidf_vectorizer.pkl", "rb") as f:
+        vectorizer = pickle.load(f)
+
+    try:
+        user_text = " ".join(user_skills).lower()
+        user_vector = vectorizer.transform([user_text]).toarray()
+
+        # Extraer solo los IDs y los vectores de habilidades de las ofertas
+        offers = list(collection.find({}, {"_id": 1, "Skills_vectorizadas": 1}))
+        
+        # Convertir los vectores de las ofertas en una matriz NumPy
+        offer_vectors = np.array([offer["Skills_vectorizadas"] for offer in offers])
+
+        # Calcular similitud coseno entre usuario y ofertas
+        similarities = cosine_similarity(user_vector, offer_vectors)[0]
+
+        # Filtrar y ordenar ofertas por similitud
+        matching_offers = sorted(
+            [{"_id": str(offer["_id"]), "Similitud": round(sim, 2)}
+             for offer, sim in zip(offers, similarities) if sim > similarity_threshold],
+            key=lambda x: x["Similitud"], reverse=True
+        )
+
+        return matching_offers[:top_n]
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al procesar la recomendación: {str(e)}")
+
+# Endpoint para obtener detalles de las ofertas recomendadas
+@app.post("/get_jobs_by_ids/")
+async def get_jobs_by_ids(job_ids: List[str]):
+    try:
+        object_ids = [ObjectId(job_id) for job_id in job_ids]
+        jobs = list(collection.find({"_id": {"$in": object_ids}}, {"Skills_vectorizadas": 0}))
+        return jobs
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error al recuperar ofertas: {str(e)}")
