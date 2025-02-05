@@ -1,15 +1,8 @@
-from pydantic import BaseModel
-from typing import List
-from fastapi import FastAPI, File, UploadFile, HTTPException, Depends, Query
+from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 import pytesseract
 from PIL import Image, UnidentifiedImageError
 from pdf2image import convert_from_bytes
 import os
-import pickle
-import numpy as np
-from pymongo import MongoClient
-from sklearn.metrics.pairwise import cosine_similarity
-from bson import ObjectId
 
 app = FastAPI()
 
@@ -146,55 +139,3 @@ async def process_cv(file: UploadFile = File(...)):
         raise http_err
     except Exception as e:
         return {"error": f"Error inesperado: {str(e)}"}
-
-
-# Modelo para la entrada con las habilidades del usuario
-class RecommendRequest(BaseModel):
-    user_skills: List[str]
-
-@app.post("/recommend_jobs/")
-async def recommend_jobs_endpoint(
-    request: RecommendRequest,
-    top_n: int = Query(10, description="Número de ofertas a devolver"),
-    similarity_threshold: float = Query(0.30, description="Umbral de similitud mínimo")
-):
-    # Cargar el vectorizador previamente guardado
-    with open("tfidf_vectorizer.pkl", "rb") as f:
-        vectorizer = pickle.load(f)
-
-    try:
-        user_text = " ".join(request.user_skills).lower()
-        user_vector = vectorizer.transform([user_text]).toarray()
-
-        # Extraer solo los IDs y los vectores de habilidades de las ofertas
-        offers = list(collection.find({}, {"_id": 1, "Skills_vectorizadas": 1}))
-
-        # Convertir los vectores de las ofertas en una matriz NumPy
-        offer_vectors = np.array([offer["Skills_vectorizadas"] for offer in offers])
-
-        # Calcular similitud coseno entre usuario y ofertas
-        similarities = cosine_similarity(user_vector, offer_vectors)[0]
-
-        # Filtrar y ordenar ofertas por similitud
-        matching_offers = sorted(
-            [{"_id": str(offer["_id"]), "Similitud": round(sim, 2)}
-             for offer, sim in zip(offers, similarities) if sim > similarity_threshold],
-            key=lambda x: x["Similitud"], reverse=True
-        )
-
-        return matching_offers[:top_n]
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al procesar la recomendación: {str(e)}")
-
-# Modelo para recibir los IDs de ofertas a consultar
-class JobIDsRequest(BaseModel):
-    job_ids: List[str]
-
-@app.post("/get_jobs_by_ids/")
-async def get_jobs_by_ids(request: JobIDsRequest):
-    try:
-        object_ids = [ObjectId(job_id) for job_id in request.job_ids]
-        jobs = list(collection.find({"_id": {"$in": object_ids}}, {"Skills_vectorizadas": 0}))
-        return jobs
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Error al recuperar ofertas: {str(e)}")

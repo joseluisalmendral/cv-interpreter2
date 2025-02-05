@@ -4,7 +4,3 @@ pytesseract
 Pillow
 pdf2image
 python-multipart
-pymongo
-scikit-learn
-numpy
-pydantic
