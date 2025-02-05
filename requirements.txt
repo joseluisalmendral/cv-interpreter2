@@ -7,3 +7,4 @@ python-multipart
 pymongo
 scikit-learn
 numpy
+pydantic

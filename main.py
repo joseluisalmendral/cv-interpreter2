@@ -1,3 +1,4 @@
+from pydantic import BaseModel
 from typing import List
 from fastapi import FastAPI, File, UploadFile, HTTPException, Depends
 import pytesseract
@@ -146,21 +147,28 @@ async def process_cv(file: UploadFile = File(...)):
     except Exception as e:
         return {"error": f"Error inesperado: {str(e)}"}
 
-# Endpoint para recomendar ofertas de trabajo
-@app.post("/recommend_jobs/")
-async def recommend_jobs_endpoint(user_skills: List[str], top_n: int = 10, similarity_threshold: float = 0.30):
 
+# Modelo para la entrada con las habilidades del usuario
+class RecommendRequest(BaseModel):
+    user_skills: List[str]
+
+@app.post("/recommend_jobs/")
+async def recommend_jobs_endpoint(
+    request: RecommendRequest,
+    top_n: int = Query(10, description="Número de ofertas a devolver"),
+    similarity_threshold: float = Query(0.30, description="Umbral de similitud mínimo")
+):
     # Cargar el vectorizador previamente guardado
     with open("tfidf_vectorizer.pkl", "rb") as f:
         vectorizer = pickle.load(f)
 
     try:
-        user_text = " ".join(user_skills).lower()
+        user_text = " ".join(request.user_skills).lower()
         user_vector = vectorizer.transform([user_text]).toarray()
 
         # Extraer solo los IDs y los vectores de habilidades de las ofertas
         offers = list(collection.find({}, {"_id": 1, "Skills_vectorizadas": 1}))
-        
+
         # Convertir los vectores de las ofertas en una matriz NumPy
         offer_vectors = np.array([offer["Skills_vectorizadas"] for offer in offers])
 
@@ -178,11 +186,14 @@ async def recommend_jobs_endpoint(user_skills: List[str], top_n: int = 10, simil
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error al procesar la recomendación: {str(e)}")
 
-# Endpoint para obtener detalles de las ofertas recomendadas
+# Modelo para recibir los IDs de ofertas a consultar
+class JobIDsRequest(BaseModel):
+    job_ids: List[str]
+
 @app.post("/get_jobs_by_ids/")
-async def get_jobs_by_ids(job_ids: List[str]):
+async def get_jobs_by_ids(request: JobIDsRequest):
     try:
-        object_ids = [ObjectId(job_id) for job_id in job_ids]
+        object_ids = [ObjectId(job_id) for job_id in request.job_ids]
         jobs = list(collection.find({"_id": {"$in": object_ids}}, {"Skills_vectorizadas": 0}))
         return jobs
     except Exception as e:
